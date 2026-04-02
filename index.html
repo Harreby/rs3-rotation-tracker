@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rotation Tracker</title>
+    <script src="https://runeapps.org/alt1/alt1lib.js"></script>
+    <style>
+        body { background: rgba(0,0,0,0.7); color: white; font-family: sans-serif; margin: 10px; overflow: hidden; }
+        
+        /* The UI Layout: 1 Large, 2 Small */
+        .tracker-container { display: flex; align-items: center; gap: 10px; height: 100px; }
+        #main-slot { width: 70px; height: 70px; border: 2px solid gold; border-radius: 5px; }
+        .side-slots { display: flex; flex-direction: column; gap: 5px; }
+        .small-slot { width: 35px; height: 35px; border: 1px solid #ccc; border-radius: 3px; opacity: 0.8; }
+
+        /* Settings Area */
+        .settings { margin-top: 15px; font-size: 0.8em; background: #222; padding: 10px; border-radius: 5px; }
+        textarea { width: 100%; height: 50px; background: #333; color: white; border: 1px solid #555; }
+        button { background: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; margin-top: 5px; }
+        button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+
+    <div class="tracker-container">
+        <img id="main-slot" src="" alt="?">
+        <div class="side-slots">
+            <img id="small-1" class="small-slot" src="" alt="">
+            <img id="small-2" class="small-slot" src="" alt="">
+        </div>
+    </div>
+
+    <div class="settings">
+        <strong>Setup Rotation:</strong><br>
+        <input type="text" id="rot-name" placeholder="Rotation Name"><br>
+        <textarea id="rot-input" placeholder="Greater Ricochet, Snipe, Corruption Shot"></textarea><br>
+        <button onclick="saveAndLoad()">Save & Start</button>
+        <button onclick="nextAbility()" style="background:#2196F3;">Manual Next</button>
+    </div>
+
+    <script>
+        let currentRotation = [];
+        let iconCache = {};
+
+        // 1. Fetch Icon URL from Wiki API
+        async function getWikiIcon(ability) {
+            if (iconCache[ability]) return iconCache[ability];
+            
+            // Format name for Wiki: "snipe" -> "Snipe.png"
+            const fileName = ability.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') + ".png";
+            const url = `https://runescape.wiki/api.php?action=query&titles=File:${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+
+            try {
+                const resp = await fetch(url);
+                const data = await resp.json();
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                const finalUrl = pageId !== "-1" ? pages[pageId].imageinfo[0].url : "https://via.placeholder.com/70?text=Err";
+                iconCache[ability] = finalUrl;
+                return finalUrl;
+            } catch (e) {
+                return "https://via.placeholder.com/70?text=Err";
+            }
+        }
+
+        // 2. Update UI Visuals
+        async function updateDisplay() {
+            if (currentRotation.length === 0) return;
+
+            document.getElementById("main-slot").src = await getWikiIcon(currentRotation[0] || "");
+            document.getElementById("small-1").src = await getWikiIcon(currentRotation[1] || "");
+            document.getElementById("small-2").src = await getWikiIcon(currentRotation[2] || "");
+        }
+
+        // 3. Logic to move rotation forward
+        function nextAbility() {
+            if (currentRotation.length > 0) {
+                let completed = currentRotation.shift();
+                currentRotation.push(completed); // Loops the rotation
+                updateDisplay();
+            }
+        }
+
+        // 4. Save to LocalStorage and Start
+        async function saveAndLoad() {
+            const name = document.getElementById("rot-name").value;
+            const input = document.getElementById("rot-input").value;
+            const list = input.split(",").map(i => i.trim()).filter(i => i !== "");
+
+            if (list.length > 0) {
+                localStorage.setItem("rot_" + name, JSON.stringify(list));
+                currentRotation = list;
+                await updateDisplay();
+                console.log("Rotation Loaded:", name);
+            }
+        }
+
+        // Initialize Alt1 permissions
+        if (window.alt1) {
+            alt1.identifyAppUrl("appconfig.json");
+        }
+    </script>
+</body>
+</html>
