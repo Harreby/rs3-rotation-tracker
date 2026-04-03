@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RotTracker - Sturdy Presets</title>
+    <title>RotTracker - Auto-Update Pro</title>
     <script src="https://runeapps.org/alt1/alt1lib.js"></script>
     <style>
         body { background: #1a1a1a; color: #dcdcdc; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 10px; margin: 0; user-select: none; }
@@ -16,22 +16,20 @@
         textarea { height: 70px; resize: none; color: #b0ffb0; font-weight: bold; }
 
         button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; margin: 2px; transition: 0.1s; }
-        button:active { transform: translateY(2px); }
-        .btn-add { background: #444; color: #eee; width: 100%; margin-bottom: 10px; border: 1px solid #555; }
         .btn-run { background: #2e7d32; color: white; width: 45%; }
         .btn-next { background: #1565c0; color: white; width: 45%; }
         .btn-preset { background: #6a1b9a; color: white; width: 48%; font-size: 11px; }
         
-        #status { font-size: 0.9em; color: #ff9800; margin-top: 8px; font-weight: bold; background: #000; padding: 8px; border-radius: 4px; border: 1px solid #333; }
+        #status { font-size: 0.9em; color: #00ff00; margin-top: 8px; font-weight: bold; background: #000; padding: 8px; border-radius: 4px; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <div style="background: #333; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444;">
-        <input type="text" id="preset-name" placeholder="Name (e.g. Rasial)">
+        <input type="text" id="preset-name" placeholder="Preset Name">
         <div style="display: flex; justify-content: space-between;">
-            <button class="btn-preset" onclick="savePreset()">SAVE NEW</button>
-            <button class="btn-preset" style="background:#455a64" onclick="loadPreset()">LOAD SELECTED</button>
+            <button class="btn-preset" onclick="savePreset()">SAVE</button>
+            <button class="btn-preset" style="background:#455a64" onclick="loadPreset()">LOAD</button>
         </div>
         <select id="saved-presets" onchange="document.getElementById('preset-name').value = this.value"></select>
     </div>
@@ -46,38 +44,10 @@
 
     <div class="controls">
         <div id="status">STATUS: STANDBY</div>
-        
-        <select id="ability-picker">
-            <optgroup label="Necromancy">
-                <option value="Necromancy (ability)">Necromancy (Auto)</option>
-                <option value="Touch of Death">Touch of Death</option>
-                <option value="Soul Sap">Soul Sap</option>
-                <option value="Death Skulls">Death Skulls</option>
-                <option value="Finger of Death">Finger of Death</option>
-                <option value="Soul Feast">Soul Feast</option>
-                <option value="Volley of Souls">Volley of Souls</option>
-                <option value="Bloat">Bloat</option>
-                <option value="Living Death">Living Death</option>
-                <option value="Conjure Undead Army">Conjure Undead Army</option>
-                <option value="Command Skeleton Warrior">Command Skeleton</option>
-                <option value="Command Putrid Zombie">Command Zombie</option>
-                <option value="Command Vengeful Ghost">Command Ghost</option>
-            </optgroup>
-            <optgroup label="Abilities">
-                <option value="Surge">Surge</option>
-                <option value="Dive">Dive</option>
-                <option value="Greater Ricochet">G-Ricochet</option>
-                <option value="Greater Fury">G-Fury</option>
-                <option value="Greater Concentrated Blast">G-Conc Blast</option>
-                <option value="Resonance">Resonance</option>
-                <option value="Devotion">Devotion</option>
-            </optgroup>
-        </select>
-        <button class="btn-add" onclick="addAbil()">+ Add to List</button>
-        <textarea id="i" placeholder="Rotation Names..."></textarea>
+        <textarea id="i" placeholder="Ability Names (Comma separated)..."></textarea>
         
         <div style="display: flex; justify-content: center;">
-            <button class="btn-run" onclick="start()">START</button>
+            <button class="btn-run" onclick="start()">START SCAN</button>
             <button class="btn-next" onclick="next()">SKIP</button>
         </div>
     </div>
@@ -86,13 +56,7 @@
         let rotation = [];
         let isScanning = false;
 
-        window.onload = () => { refreshPresetList(); if(window.alt1) alt1.identifyAppUrl("appconfig.json"); };
-
-        function addAbil() {
-            let area = document.getElementById("i");
-            let val = document.getElementById("ability-picker").value;
-            area.value += (area.value ? ", " : "") + val;
-        }
+        window.onload = () => { refreshPresets(); if(window.alt1) alt1.identifyAppUrl("appconfig.json"); };
 
         async function getIcon(name) {
             if(!name) return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -111,34 +75,27 @@
         }
 
         function savePreset() {
-            let name = document.getElementById("preset-name").value;
-            if(!name) return;
-            let data = document.getElementById("i").value;
-            localStorage.setItem("RS_ROT_" + name, data);
-            refreshPresetList();
-            document.getElementById("status").innerText = "SAVED: " + name;
+            let n = document.getElementById("preset-name").value;
+            if(!n) return;
+            localStorage.setItem("RS_ROT_" + n, document.getElementById("i").value);
+            refreshPresets();
         }
 
         function loadPreset() {
-            let name = document.getElementById("preset-name").value;
-            let data = localStorage.getItem("RS_ROT_" + name);
-            if(data) {
-                document.getElementById("i").value = data;
-                start();
-                document.getElementById("status").innerText = "LOADED: " + name;
-            }
+            let n = document.getElementById("preset-name").value;
+            let data = localStorage.getItem("RS_ROT_" + n);
+            if(data) { document.getElementById("i").value = data; start(); }
         }
 
-        function refreshPresetList() {
+        function refreshPresets() {
             const sel = document.getElementById("saved-presets");
-            sel.innerHTML = '<option value="">-- Select Preset --</option>';
+            sel.innerHTML = '<option value="">-- Presets --</option>';
             for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if (key.startsWith("RS_ROT_")) {
-                    let opt = document.createElement("option");
-                    opt.value = key.replace("RS_ROT_", "");
-                    opt.innerText = opt.value;
-                    sel.appendChild(opt);
+                let k = localStorage.key(i);
+                if (k.startsWith("RS_ROT_")) {
+                    let o = document.createElement("option");
+                    o.value = k.replace("RS_ROT_", ""); o.innerText = o.value;
+                    sel.appendChild(o);
                 }
             }
         }
@@ -146,7 +103,7 @@
         function start() {
             rotation = document.getElementById("i").value.split(',').map(s=>s.trim()).filter(s=>s!=="");
             updateUI();
-            if(rotation.length > 0) { isScanning = true; loop(); }
+            if(rotation.length > 0) { isScanning = true; checkLoop(); }
         }
 
         function next() {
@@ -154,25 +111,28 @@
                 rotation.push(rotation.shift());
                 updateUI();
                 isScanning = false;
+                // Wait for the icon to definitely turn "dark" before scanning again
                 setTimeout(() => { isScanning = true; }, 1400); 
             }
         }
 
-        function loop() {
-            if(!isScanning || !window.alt1) { setTimeout(loop, 250); return; }
+        function checkLoop() {
+            if (!isScanning || !window.alt1) { setTimeout(checkLoop, 200); return; }
             let img = alt1.bindlnInterface(0, 0, alt1.rsWidth, alt1.rsHeight);
             let target = document.getElementById("m");
             
-            // Re-applying the center-scan logic (7,7,18,18) to ignore keybinds
-            let found = img.findSubimage(target, 0.6, 7, 7, 18, 18);
+            // INCREASED SENSITIVITY (0.85): 
+            // 0.85 means it must be a very close color match. 
+            // When the icon dims on cooldown, the match will fail.
+            let found = img.findSubimage(target, 0.85, 7, 7, 18, 18);
 
             if (found.length === 0) {
-                document.getElementById("status").innerText = "SUCCESS!";
+                document.getElementById("status").innerText = "SKIPPING...";
                 next();
             } else {
-                document.getElementById("status").innerText = "WATCHING: " + rotation[0];
+                document.getElementById("status").innerText = "READY: " + rotation[0].toUpperCase();
             }
-            setTimeout(loop, 250);
+            setTimeout(checkLoop, 250);
         }
     </script>
 </body>
