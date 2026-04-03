@@ -2,7 +2,6 @@
 	"name": "Rotation Tracker",
 	"version": "1.0.0",
 	"description": "RS3 Rotation Overlay",
-	"icons": [ { "size": 64, "url": "icon.png" } ],
 	"main": "index.html",
 	"permissions": [ "screen" ]
 }
