@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RotTracker - Keypress Edition</title>
+    <title>RotTracker - Coordinate Lock</title>
     <script src="https://runeapps.org/alt1/alt1lib.js"></script>
     <style>
         body { background: #1a1a1a; color: #dcdcdc; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 10px; margin: 0; user-select: none; }
@@ -13,25 +13,19 @@
         input, select, textarea { width: 100%; background: #111; color: #eee; border: 1px solid #444; padding: 8px; margin-bottom: 8px; border-radius: 4px; box-sizing: border-box; font-size: 12px; }
         textarea { height: 70px; color: #b0ffb0; font-weight: bold; font-family: monospace; }
         button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; margin: 2px; }
-        .btn-add { background: #444; color: #eee; width: 100%; margin-bottom: 8px; border: 1px solid #555; }
+        .btn-lock { background: #e65100; color: white; width: 100%; border: 2px solid #ff9800; margin-bottom: 10px; }
         .btn-run { background: #2e7d32; color: white; width: 45%; }
         .btn-next { background: #1565c0; color: white; width: 45%; }
-        #status { font-size: 0.9em; color: #ffd700; margin-top: 8px; font-weight: bold; padding: 8px; background: #000; border-radius: 4px; border: 1px solid #333; }
-        optgroup[label="Necromancy"] { color: #c080ff; }
-        optgroup[label="Melee"] { color: #ff6060; }
-        optgroup[label="Ranged"] { color: #60ff60; }
-        optgroup[label="Magic"] { color: #60c0ff; }
+        #status { font-size: 0.9em; color: #00ff00; margin-top: 8px; font-weight: bold; padding: 8px; background: #000; border-radius: 4px; border: 1px solid #333; }
+        optgroup { background: #111; }
     </style>
 </head>
 <body>
 
-    <div style="background: #333; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444;">
+    <div style="background: #333; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
         <input type="text" id="preset-name" placeholder="Preset Name">
-        <div style="display: flex; justify-content: space-between;">
-            <button style="background:#6a1b9a; color:white; width:48%; font-size:11px;" onclick="savePreset()">SAVE</button>
-            <button style="background:#455a64; color:white; width:48%; font-size:11px;" onclick="loadPreset()">LOAD</button>
-        </div>
-        <select id="saved-presets" style="margin-top:5px;" onchange="document.getElementById('preset-name').value = this.value"></select>
+        <button style="background:#6a1b9a; color:white; width:48%;" onclick="savePreset()">SAVE</button>
+        <button style="background:#455a64; color:white; width:48%;" onclick="loadPreset()">LOAD</button>
     </div>
 
     <div class="slots">
@@ -43,82 +37,56 @@
     </div>
 
     <div class="controls">
-        <div id="status">PRESS START TO TRACK KEYS</div>
+        <div id="status">STEP 1: LOCK SLOT</div>
+        <button class="btn-lock" onclick="lockSlot()">LOCK SLOT (Hover mouse over Slot 1)</button>
         
-        <div style="display:flex; gap:5px; margin-bottom:8px;">
-            <select id="ability-picker" style="flex:2;">
-                <optgroup label="Necromancy">
-                    <option value="Soul Sap">Soul Sap</option>
-                    <option value="Touch of Death">Touch of Death</option>
-                    <option value="Death Skulls">Death Skulls</option>
-                    <option value="Finger of Death">Finger of Death</option>
-                    <option value="Volley of Souls">Volley of Souls</option>
-                    <option value="Soul Feast">Soul Feast</option>
-                    <option value="Bloat">Bloat</option>
-                    <option value="Living Death">Living Death</option>
-                </optgroup>
-                <optgroup label="Melee">
-                    <option value="Greater Barge">G-Barge</option>
-                    <option value="Greater Fury">G-Fury</option>
-                    <option value="Assault">Assault</option>
-                    <option value="Hurricane">Hurricane</option>
-                </optgroup>
-                <optgroup label="Ranged">
-                    <option value="Greater Ricochet">G-Ricochet</option>
-                    <option value="Snap Shot">Snap Shot</option>
-                    <option value="Rapid Fire">Rapid Fire</option>
-                </optgroup>
-                <optgroup label="Magic">
-                    <option value="Greater Sunshine">Sunshine</option>
-                    <option value="Wild Magic">Wild Magic</option>
-                    <option value="Asphyxiate">Asphyxiate</option>
-                </optgroup>
-                <optgroup label="Defensives">
-                    <option value="Surge">Surge</option>
-                    <option value="Dive">Dive</option>
-                    <option value="Resonance">Resonance</option>
-                </optgroup>
-            </select>
-            <input type="text" id="key-input" placeholder="Key (e.g. E)" style="flex:1; margin:0;">
-        </div>
+        <select id="ability-picker">
+            <optgroup label="Necromancy">
+                <option value="Soul Sap">Soul Sap</option>
+                <option value="Touch of Death">Touch of Death</option>
+                <option value="Death Skulls">Death Skulls</option>
+                <option value="Finger of Death">Finger of Death</option>
+                <option value="Volley of Souls">Volley of Souls</option>
+                <option value="Soul Feast">Soul Feast</option>
+                <option value="Bloat">Bloat</option>
+                <option value="Living Death">Living Death</option>
+            </optgroup>
+            <optgroup label="Melee">
+                <option value="Assault">Assault</option>
+                <option value="Hurricane">Hurricane</option>
+                <option value="Berserk">Berserk</option>
+            </optgroup>
+            <optgroup label="Defensives">
+                <option value="Surge">Surge</option>
+                <option value="Dive">Dive</option>
+                <option value="Devotion">Devotion</option>
+            </optgroup>
+        </select>
+        <button class="btn-add" style="background:#444; color:white; width:100%; margin-bottom:8px;" onclick="addAbil()">+ Add to List</button>
         
-        <button class="btn-add" onclick="addAbil()">+ Add (Ability + Key)</button>
-        
-        <textarea id="i" placeholder="Rotation (Ability:Key)..."></textarea>
+        <textarea id="i" placeholder="Rotation Names..."></textarea>
         
         <div style="display: flex; justify-content: center;">
-            <button class="btn-run" onclick="start()">START TRACKING</button>
+            <button class="btn-run" onclick="start()">START SCAN</button>
             <button class="btn-next" onclick="next()">SKIP</button>
         </div>
     </div>
 
     <script>
-        let rotation = []; // Stores {name: "Soul Sap", key: "E"}
-        let isTracking = false;
-
-        window.onload = () => { 
-            refreshPresets(); 
-            if(window.alt1) {
-                alt1.identifyAppUrl("appconfig.json");
-                // Listen for key events
-                alt1.events.keydown.push(e => {
-                    if(isTracking && rotation.length > 0) {
-                        let targetKey = rotation[0].key.toLowerCase();
-                        let pressedKey = String.fromCharCode(e.key).toLowerCase();
-                        if(pressedKey === targetKey) {
-                            next();
-                        }
-                    }
-                });
-            }
-        };
+        let rotation = [];
+        let isScanning = false;
+        let lockedPos = null;
 
         function addAbil() {
-            let name = document.getElementById("ability-picker").value;
-            let key = document.getElementById("key-input").value.toUpperCase();
-            if(!key) { alert("Enter a keybind!"); return; }
             let area = document.getElementById("i");
-            area.value += (area.value ? ", " : "") + `${name}:${key}`;
+            area.value += (area.value ? ", " : "") + document.getElementById("ability-picker").value;
+        }
+
+        function lockSlot() {
+            if(!window.alt1) return;
+            let pos = alt1.mousePosition;
+            lockedPos = { x: pos.x, y: pos.y };
+            document.getElementById("status").innerText = `LOCKED AT: ${lockedPos.x}, ${lockedPos.y}`;
         }
 
         async function getIcon(name) {
@@ -132,55 +100,50 @@
         }
 
         async function updateUI() {
-            document.getElementById("m").src = await getIcon(rotation[0]?.name);
-            document.getElementById("s1").src = await getIcon(rotation[1]?.name);
-            document.getElementById("s2").src = await getIcon(rotation[2]?.name);
-            if(rotation[0]) {
-                document.getElementById("status").innerText = `WAITING FOR KEY: [ ${rotation[0].key} ]`;
-            }
+            document.getElementById("m").src = await getIcon(rotation[0]);
+            document.getElementById("s1").src = await getIcon(rotation[1]);
+            document.getElementById("s2").src = await getIcon(rotation[2]);
         }
 
         function start() {
-            let raw = document.getElementById("i").value.split(',');
-            rotation = raw.map(item => {
-                let parts = item.split(':');
-                return { name: parts[0].trim(), key: parts[1]?.trim() || "" };
-            }).filter(item => item.name !== "");
-            
-            if(rotation.length > 0) {
-                isTracking = true;
-                updateUI();
-            }
+            if(!lockedPos) { alert("Please Lock a Slot first!"); return; }
+            rotation = document.getElementById("i").value.split(',').map(s=>s.trim()).filter(s=>s!=="");
+            updateUI();
+            isScanning = true;
+            loop();
         }
 
         function next() {
             if(rotation.length > 1) {
                 rotation.push(rotation.shift());
                 updateUI();
+                isScanning = false;
+                setTimeout(() => { isScanning = true; }, 1400); 
             }
         }
 
-        function savePreset() {
-            localStorage.setItem("RS_KEY_ROT_" + document.getElementById("preset-name").value, document.getElementById("i").value);
-            refreshPresets();
-        }
+        function loop() {
+            if(!isScanning || !lockedPos || !window.alt1) { setTimeout(loop, 250); return; }
+            
+            // Look at the single pixel in the center of your locked slot
+            let colors = alt1.getPixelColor(lockedPos.x, lockedPos.y);
+            
+            // Detection: White (Cooldown timer) OR Dark (Used/No Adrenaline)
+            let white = (colors.r > 215 && colors.g > 215 && colors.b > 215);
+            let dark = (colors.r < 60 && colors.g < 60 && colors.b < 60);
 
-        function loadPreset() {
-            let data = localStorage.getItem("RS_KEY_ROT_" + document.getElementById("preset-name").value);
-            if(data) { document.getElementById("i").value = data; start(); }
-        }
-
-        function refreshPresets() {
-            const sel = document.getElementById("saved-presets");
-            sel.innerHTML = '<option value="">-- Presets --</option>';
-            for (let i = 0; i < localStorage.length; i++) {
-                let k = localStorage.key(i);
-                if (k.startsWith("RS_KEY_ROT_")) {
-                    let o = document.createElement("option");
-                    o.value = k.replace("RS_KEY_ROT_", ""); o.innerText = o.value;
-                    sel.appendChild(o);
-                }
+            if (white || dark) {
+                document.getElementById("status").innerText = "MOVE DETECTED!";
+                next();
             }
+
+            setTimeout(loop, 250);
+        }
+
+        function savePreset() { localStorage.setItem("ROT_FINAL_" + document.getElementById("preset-name").value, document.getElementById("i").value); }
+        function loadPreset() { 
+            let d = localStorage.getItem("ROT_FINAL_" + document.getElementById("preset-name").value);
+            if(d) { document.getElementById("i").value = d; start(); }
         }
     </script>
 </body>
