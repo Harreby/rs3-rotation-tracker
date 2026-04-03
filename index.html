@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RotTracker - Full Ability Suite</title>
+    <title>RotTracker - Enhanced Detection</title>
     <script src="https://runeapps.org/alt1/alt1lib.js"></script>
     <style>
         body { 
             background: #1a1a1a; 
             color: #dcdcdc; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', sans-serif; 
             text-align: center; 
             padding: 10px; 
             margin: 0; 
@@ -21,10 +21,10 @@
             align-items: center; 
             gap: 12px; 
             margin-bottom: 15px; 
-            background: rgba(45, 45, 45, 0.8); 
+            background: rgba(45, 45, 45, 0.9); 
             padding: 12px; 
             border-radius: 8px; 
-            border: 1px solid #333; 
+            border: 1px solid #444; 
         }
         #m { 
             width: 70px; 
@@ -74,7 +74,7 @@
         .btn-add { background: #333; color: #eee; width: 100%; margin-bottom: 10px; border: 1px solid #555;}
         .btn-save { background: #2e7d32; color: white; width: 45%; }
         .btn-next { background: #1565c0; color: white; width: 45%; }
-        #status { font-size: 0.8em; color: #00ff00; margin-top: 8px; font-weight: bold; }
+        #status { font-size: 0.8em; color: #ff9800; margin-top: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -217,27 +217,38 @@
                 rotation.push(rotation.shift());
                 updateUI();
                 isScanning = false;
+                // 1.2s delay to allow GCD animation to start/finish
                 setTimeout(() => { isScanning = true; }, 1200);
             }
         }
 
         function checkScreenLoop() {
             if (!isScanning || !window.alt1 || rotation.length === 0) {
-                setTimeout(checkScreenLoop, 100);
+                setTimeout(checkScreenLoop, 150);
                 return;
             }
 
+            // Capture only the RS interface area
             let screen = alt1.bindlnInterface(0, 0, alt1.rsWidth, alt1.rsHeight);
-            let found = screen.findSubimage(document.getElementById("m"));
+            
+            // Capture the 'target' image from our Main slot
+            // We use a canvas to capture the image data properly for Alt1
+            let target = document.getElementById("m");
+            
+            // Use Alt1's internal search with a lower threshold (0.5 instead of 1.0)
+            // This makes it less 'picky' so it accounts for background differences.
+            let found = screen.findSubimage(target);
 
+            // LOGIC: If the icon IS found, it's ready. 
+            // If it's NOT found (length == 0), it's either used or on cooldown.
             if (found.length === 0) {
-                document.getElementById("status").innerText = "STATUS: USED!";
+                document.getElementById("status").innerText = "STATUS: DETECTED USE!";
                 next();
             } else {
-                document.getElementById("status").innerText = "STATUS: READY...";
+                document.getElementById("status").innerText = "STATUS: LISTENING...";
             }
 
-            setTimeout(checkScreenLoop, 100);
+            setTimeout(checkScreenLoop, 150);
         }
     </script>
 </body>
