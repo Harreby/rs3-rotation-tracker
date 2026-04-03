@@ -2,41 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RotTracker - Auto-Update Pro</title>
+    <title>RotTracker - Full Suite Pro</title>
     <script src="https://runeapps.org/alt1/alt1lib.js"></script>
     <style>
         body { background: #1a1a1a; color: #dcdcdc; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 10px; margin: 0; user-select: none; }
         .slots { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; border: 2px solid #ffd700; }
-        #m { width: 70px; height: 70px; border: 3px solid #ffd700; border-radius: 5px; background: #000; object-fit: contain; }
-        .s-container { display: flex; flex-direction: column; gap: 4px; }
-        .s { width: 32px; height: 32px; border: 1px solid #666; border-radius: 3px; background: #000; }
+        #m { width: 64px; height: 64px; border: 2px solid #ffd700; border-radius: 5px; background: #000; object-fit: contain; }
+        .s { width: 30px; height: 30px; border: 1px solid #555; border-radius: 3px; background: #000; }
         
         .controls { background: #252525; padding: 12px; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px; }
-        input, select, textarea { width: 100%; background: #111; color: #eee; border: 1px solid #444; padding: 8px; margin-bottom: 8px; box-sizing: border-box; font-family: monospace; font-size: 12px; border-radius: 4px; }
-        textarea { height: 70px; resize: none; color: #b0ffb0; font-weight: bold; }
-
-        button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; margin: 2px; transition: 0.1s; }
+        input, select, textarea { width: 100%; background: #111; color: #eee; border: 1px solid #444; padding: 8px; margin-bottom: 8px; border-radius: 4px; box-sizing: border-box; font-size: 12px; }
+        textarea { height: 65px; color: #b0ffb0; font-weight: bold; font-family: monospace; }
+        
+        button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; margin: 2px; }
+        .btn-add { background: #444; color: #eee; width: 100%; margin-bottom: 8px; border: 1px solid #555; }
         .btn-run { background: #2e7d32; color: white; width: 45%; }
         .btn-next { background: #1565c0; color: white; width: 45%; }
-        .btn-preset { background: #6a1b9a; color: white; width: 48%; font-size: 11px; }
         
-        #status { font-size: 0.9em; color: #00ff00; margin-top: 8px; font-weight: bold; background: #000; padding: 8px; border-radius: 4px; border: 1px solid #333; }
+        #status { font-size: 0.9em; color: #00ff00; margin-top: 8px; font-weight: bold; padding: 8px; background: #000; border-radius: 4px; border: 1px solid #333; }
+        
+        /* Category Colors */
+        optgroup[label="Necromancy"] { color: #c080ff; }
+        optgroup[label="Melee"] { color: #ff6060; }
+        optgroup[label="Ranged"] { color: #60ff60; }
+        optgroup[label="Magic"] { color: #60c0ff; }
     </style>
 </head>
 <body>
 
     <div style="background: #333; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #444;">
-        <input type="text" id="preset-name" placeholder="Preset Name">
+        <input type="text" id="preset-name" placeholder="Preset Name (e.g. Telos)">
         <div style="display: flex; justify-content: space-between;">
-            <button class="btn-preset" onclick="savePreset()">SAVE</button>
-            <button class="btn-preset" style="background:#455a64" onclick="loadPreset()">LOAD</button>
+            <button style="background:#6a1b9a; color:white; width:48%; font-size:11px;" onclick="savePreset()">SAVE PRESET</button>
+            <button style="background:#455a64; color:white; width:48%; font-size:11px;" onclick="loadPreset()">LOAD PRESET</button>
         </div>
-        <select id="saved-presets" onchange="document.getElementById('preset-name').value = this.value"></select>
+        <select id="saved-presets" style="margin-top:5px;" onchange="document.getElementById('preset-name').value = this.value"></select>
     </div>
 
     <div class="slots">
         <img id="m" crossorigin="anonymous">
-        <div class="s-container">
+        <div style="display:flex; flex-direction:column; gap:4px;">
             <img id="s1" class="s" crossorigin="anonymous">
             <img id="s2" class="s" crossorigin="anonymous">
         </div>
@@ -44,19 +49,98 @@
 
     <div class="controls">
         <div id="status">STATUS: STANDBY</div>
-        <textarea id="i" placeholder="Ability Names (Comma separated)..."></textarea>
+        
+        <select id="ability-picker">
+            <optgroup label="Necromancy">
+                <option value="Necromancy (ability)">Necromancy (Auto)</option>
+                <option value="Touch of Death">Touch of Death</option>
+                <option value="Soul Sap">Soul Sap</option>
+                <option value="Soul Strike">Soul Strike</option>
+                <option value="Volley of Souls">Volley of Souls</option>
+                <option value="Finger of Death">Finger of Death</option>
+                <option value="Death Skulls">Death Skulls</option>
+                <option value="Soul Feast">Soul Feast</option>
+                <option value="Bloat">Bloat</option>
+                <option value="Blood Siphon">Blood Siphon</option>
+                <option value="Spectral Scythe">Spectral Scythe</option>
+                <option value="Living Death">Living Death</option>
+                <option value="Conjure Undead Army">Conjure Undead Army</option>
+                <option value="Command Skeleton Warrior">Command Skeleton</option>
+                <option value="Command Putrid Zombie">Command Zombie</option>
+                <option value="Command Vengeful Ghost">Command Ghost</option>
+                <option value="Command Phantom Guardian">Command Phantom</option>
+            </optgroup>
+            <optgroup label="Melee">
+                <option value="Greater Barge">Greater Barge</option>
+                <option value="Greater Fury">Greater Fury</option>
+                <option value="Greater Flurry">Greater Flurry</option>
+                <option value="Slice">Slice</option>
+                <option value="Dismember">Dismember</option>
+                <option value="Cleave">Cleave</option>
+                <option value="Decimate">Decimate</option>
+                <option value="Sever">Sever</option>
+                <option value="Assault">Assault</option>
+                <option value="Hurricane">Hurricane</option>
+                <option value="Berserk">Berserk</option>
+                <option value="Overpower">Overpower</option>
+            </optgroup>
+            <optgroup label="Ranged">
+                <option value="Greater Ricochet">Greater Ricochet</option>
+                <option value="Greater Deaths Swiftness">Death's Swiftness</option>
+                <option value="Needle Strike">Needle Strike</option>
+                <option value="Dazing Shot">Dazing Shot</option>
+                <option value="Snipe">Snipe</option>
+                <option value="Fragmentation Shot">Frag Shot</option>
+                <option value="Snap Shot">Snap Shot</option>
+                <option value="Rapid Fire">Rapid Fire</option>
+                <option value="Bombardment">Bombardment</option>
+                <option value="Incendiary Shot">Incendiary Shot</option>
+            </optgroup>
+            <optgroup label="Magic">
+                <option value="Greater Concentrated Blast">G-Conc Blast</option>
+                <option value="Greater Sonic Wave">G-Sonic Wave</option>
+                <option value="Greater Sunshine">Sunshine</option>
+                <option value="Dragon Breath">Dragon Breath</option>
+                <option value="Wild Magic">Wild Magic</option>
+                <option value="Asphyxiate">Asphyxiate</option>
+                <option value="Magma Tempest">Magma Tempest</option>
+                <option value="Omnipower">Omnipower</option>
+                <option value="Tsunami">Tsunami</option>
+            </optgroup>
+            <optgroup label="Defensives">
+                <option value="Surge">Surge</option>
+                <option value="Dive">Dive</option>
+                <option value="Resonance">Resonance</option>
+                <option value="Devotion">Devotion</option>
+                <option value="Reflect">Reflect</option>
+                <option value="Barricade">Barricade</option>
+                <option value="Freedom">Freedom</option>
+                <option value="Anticipation">Anticipation</option>
+                <option value="Debilitate">Debilitate</option>
+            </optgroup>
+        </select>
+        <button class="btn-add" onclick="addAbil()">+ Add to List</button>
+        
+        <textarea id="i" placeholder="Rotation Names (Comma separated)..."></textarea>
         
         <div style="display: flex; justify-content: center;">
             <button class="btn-run" onclick="start()">START SCAN</button>
-            <button class="btn-next" onclick="next()">SKIP</button>
+            <button class="btn-next" onclick="next()">SKIP NEXT</button>
         </div>
     </div>
 
     <script>
         let rotation = [];
         let isScanning = false;
+        let lastPos = null;
 
         window.onload = () => { refreshPresets(); if(window.alt1) alt1.identifyAppUrl("appconfig.json"); };
+
+        function addAbil() {
+            let area = document.getElementById("i");
+            let val = document.getElementById("ability-picker").value;
+            area.value += (area.value ? ", " : "") + val;
+        }
 
         async function getIcon(name) {
             if(!name) return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -75,15 +159,12 @@
         }
 
         function savePreset() {
-            let n = document.getElementById("preset-name").value;
-            if(!n) return;
-            localStorage.setItem("RS_ROT_" + n, document.getElementById("i").value);
+            localStorage.setItem("RS_ROT_" + document.getElementById("preset-name").value, document.getElementById("i").value);
             refreshPresets();
         }
 
         function loadPreset() {
-            let n = document.getElementById("preset-name").value;
-            let data = localStorage.getItem("RS_ROT_" + n);
+            let data = localStorage.getItem("RS_ROT_" + document.getElementById("preset-name").value);
             if(data) { document.getElementById("i").value = data; start(); }
         }
 
@@ -103,7 +184,7 @@
         function start() {
             rotation = document.getElementById("i").value.split(',').map(s=>s.trim()).filter(s=>s!=="");
             updateUI();
-            if(rotation.length > 0) { isScanning = true; checkLoop(); }
+            if(rotation.length > 0) { isScanning = true; lastPos = null; loop(); }
         }
 
         function next() {
@@ -111,28 +192,35 @@
                 rotation.push(rotation.shift());
                 updateUI();
                 isScanning = false;
-                // Wait for the icon to definitely turn "dark" before scanning again
-                setTimeout(() => { isScanning = true; }, 1400); 
+                setTimeout(() => { isScanning = true; }, 1500); 
             }
         }
 
-        function checkLoop() {
-            if (!isScanning || !window.alt1) { setTimeout(checkLoop, 200); return; }
-            let img = alt1.bindlnInterface(0, 0, alt1.rsWidth, alt1.rsHeight);
+        function loop() {
+            if(!isScanning || !window.alt1) { setTimeout(loop, 250); return; }
+            let screen = alt1.bindlnInterface(0, 0, alt1.rsWidth, alt1.rsHeight);
             let target = document.getElementById("m");
-            
-            // INCREASED SENSITIVITY (0.85): 
-            // 0.85 means it must be a very close color match. 
-            // When the icon dims on cooldown, the match will fail.
-            let found = img.findSubimage(target, 0.85, 7, 7, 18, 18);
 
-            if (found.length === 0) {
-                document.getElementById("status").innerText = "SKIPPING...";
-                next();
+            if (!lastPos) {
+                // Initial scan with center-crop to avoid keybind corners
+                let found = screen.findSubimage(target, 0.5, 7, 7, 18, 18);
+                if (found.length > 0) {
+                    lastPos = found[0];
+                    document.getElementById("status").innerText = "LOCKED: " + rotation[0].toUpperCase();
+                } else {
+                    document.getElementById("status").innerText = "FINDING BAR...";
+                }
             } else {
-                document.getElementById("status").innerText = "READY: " + rotation[0].toUpperCase();
+                // Pixel check for "Darkness" at the locked spot
+                let cell = alt1.bindlnInterface(lastPos.x, lastPos.y, 18, 18);
+                let colors = cell.getPixelColor(9, 9);
+                if (colors.r < 65 && colors.g < 65 && colors.b < 65) {
+                    document.getElementById("status").innerText = "NEXT MOVE...";
+                    lastPos = null;
+                    next();
+                }
             }
-            setTimeout(checkLoop, 250);
+            setTimeout(loop, 250);
         }
     </script>
 </body>
