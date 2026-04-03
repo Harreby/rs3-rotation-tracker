@@ -1,11 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>RotTracker</title>
     <script src="https://runeapps.org/alt1/alt1lib.js"></script>
+    <style>
+        body { 
+            background: #1a1a1a; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            padding: 15px;
+            margin: 0;
+        }
+        .slots { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 20px; 
+            background: #252525;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        #m { 
+            width: 80px; 
+            height: 80px; 
+            border: 3px solid #ffd700; 
+            border-radius: 5px;
+            background: #000;
+        }
+        .s-container { display: flex; flex-direction: column; gap: 5px; }
+        .s { 
+            width: 40px; 
+            height: 40px; 
+            border: 1px solid #555; 
+            border-radius: 3px;
+            background: #000;
+        }
+        .controls {
+            background: #252525;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        select, textarea { 
+            width: 100%; 
+            background: #333; 
+            color: #00ff00; 
+            border: 1px solid #444; 
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        textarea { height: 60px; resize: vertical; }
+        button { 
+            padding: 10px 15px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        .btn-add { background: #444; color: white; width: 100%; margin-bottom: 10px; }
+        .btn-save { background: #2e7d32; color: white; }
+        .btn-next { background: #1565c0; color: white; }
+        label { display: block; text-align: left; font-size: 0.8em; margin-bottom: 5px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div class="slots">
+        <img id="m" alt="Main">
+        <div class="s-container">
+            <img id="s1" class="s" alt="Next">
+            <img id="s2" class="s" alt="Following">
+        </div>
+    </div>
+
+    <div class="controls">
+        <label>Quick Select Ability:</label>
+        <select id="ability-picker">
+            <optgroup label="Movement / Defensive">
+                <option value="Surge">Surge</option>
+                <option value="Dive">Dive</option>
+                <option value="Escape">Escape</option>
+                <option value="Anticipation">Anticipation</option>
+                <option value="Freedom">Freedom</option>
+                <option value="Resonance">Resonance</option>
+                <option value="Devotion">Devotion</option>
+            </optgroup>
+            <optgroup label="Necromancy">
+                <option value="Necromancy (ability)">Necromancy (Auto)</option>
+                <option value="Touch of Death">Touch of Death</option>
+                <option value="Finger of Death">Finger of Death</option>
+                <option value="Death Skulls">Death Skulls</option>
+                <option value="Blood Siphon">Blood Siphon</option>
+                <option value="Soul Feast">Soul Feast</option>
+                <option value="Volley of Souls">Volley of Souls</option>
+            </optgroup>
+            <optgroup label="Ranged">
+                <option value="Greater Ricochet">G-Ricochet</option>
+                <option value="Snipe">Snipe</option>
+                <option value="Corruption Shot">Corruption Shot</option>
+                <option value="Rapid Fire">Rapid Fire</option>
+                <option value="Snap Shot">Snap Shot</option>
+                <option value="Greater Deaths Swiftness">Death's Swiftness</option>
+            </optgroup>
+        </select>
+        <button class="btn-add" onclick="addFromDropdown()">+ Add to Rotation</button>
+
+        <label>Current Rotation (Comma separated):</label>
+        <textarea id="i" placeholder="Surge, Resonance, Devotion"></textarea>
+        
+        <div style="display: flex; justify-content: center;">
+            <button class="btn-save" onclick="start()">SAVE & START</button>
+            <button class="btn-next" onclick="next()">NEXT STEP</button>
+        </div>
+    </div>
+
     <script>
-        // THIS MUST BE AT THE TOP
+        // Tell Alt1 where the config is
         window.onload = function() {
             if (window.alt1) {
                 alt1.identifyAppUrl("appconfig.json");
@@ -14,50 +129,55 @@
 
         let rotation = [];
 
+        // Helper to get Icon from Wiki
         async function getWikiIcon(name) {
-            if (!name) return "";
+            if (!name) return "https://via.placeholder.com/80/000000/444444?text=Empty";
+            
+            // Format the name for Wiki URL
             const clean = name.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('_');
             const url = `https://runescape.wiki/api.php?action=query&titles=File:${clean}.png&prop=imageinfo&iiprop=url&format=json&origin=*`;
+            
             try {
                 const resp = await fetch(url);
                 const data = await resp.json();
                 const pages = data.query.pages;
                 const id = Object.keys(pages)[0];
-                return id !== "-1" ? pages[id].imageinfo[0].url : "";
-            } catch (e) { return ""; }
+                return id !== "-1" ? pages[id].imageinfo[0].url : "https://via.placeholder.com/80/000000/ff0000?text=Err";
+            } catch (e) { 
+                return "https://via.placeholder.com/80/000000/ff0000?text=Err"; 
+            }
         }
 
-        async function update() {
+        async function updateUI() {
             document.getElementById("m").src = await getWikiIcon(rotation[0]);
             document.getElementById("s1").src = await getWikiIcon(rotation[1]);
             document.getElementById("s2").src = await getWikiIcon(rotation[2]);
         }
 
+        function addFromDropdown() {
+            const picker = document.getElementById("ability-picker");
+            const input = document.getElementById("i");
+            const selected = picker.value;
+            
+            if (input.value.trim().length > 0) {
+                input.value += ", " + selected;
+            } else {
+                input.value = selected;
+            }
+        }
+
         function start() {
-            rotation = document.getElementById("i").value.split(',').map(s => s.trim());
-            update();
+            const raw = document.getElementById("i").value;
+            rotation = raw.split(',').map(s => s.trim()).filter(s => s !== "");
+            updateUI();
         }
 
         function next() {
-            rotation.push(rotation.shift());
-            update();
+            if (rotation.length > 0) {
+                rotation.push(rotation.shift());
+                updateUI();
+            }
         }
     </script>
-    <style>
-        body { background: #222; color: white; font-family: sans-serif; text-align: center; }
-        .slots { display: flex; justify-content: center; gap: 10px; margin: 20px; }
-        #m { width: 80px; height: 80px; border: 2px solid gold; }
-        .s { width: 40px; height: 40px; border: 1px solid gray; }
-        textarea { width: 90%; height: 50px; background: #333; color: #0f0; }
-    </style>
-</head>
-<body>
-    <div class="slots">
-        <img id="m">
-        <div><img id="s1" class="s"><br><img id="s2" class="s"></div>
-    </div>
-    <textarea id="i" placeholder="Surge, Resonance, Devotion"></textarea><br>
-    <button onclick="start()">SAVE</button>
-    <button onclick="next()">NEXT</button>
 </body>
 </html>
