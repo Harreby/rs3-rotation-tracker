@@ -2,64 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RotTracker - Calibration Mode</title>
+    <title>RotTracker - Boss Presets Pro</title>
     <script src="https://runeapps.org/alt1/alt1lib.js"></script>
     <style>
-        body { 
-            background: #1a1a1a; 
-            color: #dcdcdc; 
-            font-family: 'Segoe UI', sans-serif; 
-            text-align: center; 
-            padding: 10px; 
-            margin: 0; 
-            user-select: none; 
-        }
-        
-        .slots { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 12px; 
-            margin-bottom: 15px; 
-            background: rgba(45, 45, 45, 0.9); 
-            padding: 12px; 
-            border-radius: 8px; 
-            border: 1px solid #444; 
-        }
-        #m { width: 70px; height: 70px; border: 3px solid #ffd700; border-radius: 5px; background: #000; }
+        body { background: #1a1a1a; color: #dcdcdc; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 10px; margin: 0; user-select: none; }
+        .slots { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 15px; background: rgba(45, 45, 45, 0.9); padding: 12px; border-radius: 8px; border: 1px solid #444; }
+        #m { width: 70px; height: 70px; border: 3px solid #ffd700; border-radius: 5px; background: #000; object-fit: contain; }
         .s-container { display: flex; flex-direction: column; gap: 4px; }
         .s { width: 32px; height: 32px; border: 1px solid #666; border-radius: 3px; background: #000; }
         
-        .controls { background: #252525; padding: 12px; border-radius: 8px; border: 1px solid #333; }
-        label { display: block; text-align: left; font-size: 0.75em; margin-bottom: 4px; color: #aaa; }
+        .controls { background: #252525; padding: 12px; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px; }
+        .preset-manager { background: #333; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #555; }
         
-        select, textarea { 
-            width: 100%; background: #111; color: #eee; border: 1px solid #444; 
-            padding: 8px; margin-bottom: 8px; box-sizing: border-box; font-family: monospace; font-size: 12px; 
-        }
+        input, select, textarea { width: 100%; background: #111; color: #eee; border: 1px solid #444; padding: 8px; margin-bottom: 8px; box-sizing: border-box; font-family: monospace; font-size: 12px; }
         textarea { height: 50px; resize: none; color: #b0ffb0; }
 
-        /* Style Colors */
-        [label="Melee"], [label="Melee"] option { color: #ff6060; }
-        [label="Ranged"], [label="Ranged"] option { color: #60ff60; }
-        [label="Magic"], [label="Magic"] option { color: #60c0ff; }
-        [label="Necromancy"], [label="Necromancy"] option { color: #c080ff; }
-
-        button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; margin: 2px; transition: 0.2s; }
-        .btn-add { background: #333; color: #eee; width: 100%; margin-bottom: 10px; border: 1px solid #555;}
+        button { padding: 8px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; margin: 2px; }
+        .btn-add { background: #444; color: #eee; width: 100%; }
         .btn-save { background: #2e7d32; color: white; width: 45%; }
         .btn-next { background: #1565c0; color: white; width: 45%; }
+        .btn-preset { background: #6a1b9a; color: white; width: 100%; margin-top: 5px; }
         
-        .btn-calibrate { 
-            background: #e65100; color: white; width: 100%; margin-top: 10px; border: 2px solid #ff9800;
-        }
-        .btn-calibrate:active { background: #bf360c; }
-
-        #status { font-size: 0.85em; color: #00ff00; margin-top: 8px; font-weight: bold; padding: 5px; background: #111; border-radius: 4px;}
-        .warning { color: #ffeb3b; font-size: 0.7em; margin-top: 5px; display: block;}
+        #status { font-size: 0.85em; color: #ff9800; margin-top: 8px; font-weight: bold; padding: 5px; background: #111; border-radius: 4px;}
+        .small-text { font-size: 0.7em; color: #aaa; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
+
+    <div class="preset-manager">
+        <label class="small-text">BOSS PRESET NAME</label>
+        <input type="text" id="preset-name" placeholder="e.g. Telos">
+        <div style="display: flex; gap: 5px;">
+            <button class="btn-preset" onclick="savePreset()">SAVE PRESET</button>
+            <button class="btn-preset" style="background:#455a64" onclick="loadPreset()">LOAD PRESET</button>
+        </div>
+        <select id="saved-presets" onchange="document.getElementById('preset-name').value = this.value">
+            <option value="">-- Saved Presets --</option>
+        </select>
+    </div>
 
     <div class="slots">
         <img id="m" crossorigin="anonymous">
@@ -70,60 +50,67 @@
     </div>
 
     <div class="controls">
-        <div id="status">STATUS: NOT CALIBRATED</div>
-        <span class="warning">Hover mouse over in-game slot & click Calibrate</span>
+        <div id="status">STATUS: STANDBY</div>
         
         <select id="ability-picker">
-            <optgroup label="Constitution / Defense / Movement">
-                <option value="Surge">Surge</option>
-                <option value="Dive">Dive</option>
-                <option value="Resonance">Resonance</option>
-                <option value="Devotion">Devotion</option>
-            </optgroup>
             <optgroup label="Necromancy">
                 <option value="Necromancy (ability)">Necromancy (Auto)</option>
                 <option value="Touch of Death">Touch of Death</option>
                 <option value="Finger of Death">Finger of Death</option>
                 <option value="Death Skulls">Death Skulls</option>
                 <option value="Conjure Undead Army">Conjure Undead Army</option>
+                <option value="Command Skeleton Warrior">Command Skeleton</option>
+                <option value="Bloat">Bloat</option>
             </optgroup>
-            <optgroup label="Ranged">
-                <option value="Greater Ricochet">G-Ricochet</option>
-                <option value="Rapid Fire">Rapid Fire</option>
-                <option value="Snap Shot">Snap Shot</option>
-            </optgroup>
-            <optgroup label="Magic">
-                <option value="Greater Concentrated Blast">G-Conc Blast</option>
-                <option value="Dragon Breath">Dragon Breath</option>
-                <option value="Wild Magic">Wild Magic</option>
-            </optgroup>
-            <optgroup label="Melee">
-                <option value="Greater Fury">G-Fury</option>
-                <option value="Assault">Assault</option>
-                <option value="Berserk">Berserk</option>
-            </optgroup>
+            <option value="Surge">Surge</option>
+             <option value="Dive">Dive</option>
         </select>
         <button class="btn-add" onclick="addFromDropdown()">+ Add to Rotation</button>
-
-        <textarea id="i" placeholder="Ability1, Ability2..."></textarea>
+        <textarea id="i" placeholder="Rotation List..."></textarea>
         
         <div style="display: flex; justify-content: center;">
-            <button class="btn-save" onclick="start()">SAVE</button>
-            <button class="btn-next" onclick="next()">NEXT</button>
+            <button class="btn-save" onclick="start()">RUN ROTATION</button>
+            <button class="btn-next" onclick="next()">SKIP</button>
         </div>
-
-        <button class="btn-calibrate" onclick="calibrate()">CALIBRATE SLOT</button>
     </div>
 
     <script>
         let rotation = [];
         let isScanning = false;
-        let targetPos = null;
-        let baseBrightness = 0;
+        let presets = JSON.parse(localStorage.getItem('rotTrackerPresets') || '{}');
 
-        window.onload = function() {
+        window.onload = () => {
+            refreshPresetList();
             if (window.alt1) alt1.identifyAppUrl("appconfig.json");
         };
+
+        function refreshPresetList() {
+            const select = document.getElementById("saved-presets");
+            select.innerHTML = '<option value="">-- Saved Presets --</option>';
+            for (let name in presets) {
+                let opt = document.createElement("option");
+                opt.value = name; opt.innerText = name;
+                select.appendChild(opt);
+            }
+        }
+
+        function savePreset() {
+            const name = document.getElementById("preset-name").value;
+            if (!name) return alert("Enter a name!");
+            presets[name] = document.getElementById("i").value;
+            localStorage.setItem('rotTrackerPresets', JSON.stringify(presets));
+            refreshPresetList();
+            document.getElementById("status").innerText = "PRESET SAVED!";
+        }
+
+        function loadPreset() {
+            const name = document.getElementById("preset-name").value;
+            if (presets[name]) {
+                document.getElementById("i").value = presets[name];
+                document.getElementById("status").innerText = "PRESET LOADED!";
+                start();
+            }
+        }
 
         async function getWikiIcon(name) {
             if (!name) return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -132,9 +119,8 @@
             try {
                 const resp = await fetch(url);
                 const data = await resp.json();
-                const pages = data.query.pages;
-                const id = Object.keys(pages)[0];
-                return id !== "-1" ? pages[id].imageinfo[0].url : "";
+                const id = Object.keys(data.query.pages)[0];
+                return id !== "-1" ? data.query.pages[id].imageinfo[0].url : "";
             } catch (e) { return ""; }
         }
 
@@ -149,28 +135,12 @@
             input.value += (input.value.trim().length > 0 ? ", " : "") + document.getElementById("ability-picker").value;
         }
 
-        function calibrate() {
-            if (!window.alt1) return;
-            targetPos = alt1.mousePosition;
-            
-            // Sample the current brightness
-            let img = alt1.bindlnInterface(targetPos.x, targetPos.y, 1, 1);
-            let p = img.getPixel(0, 0);
-            baseBrightness = (p[0] + p[1] + p[2]) / 3;
-            
-            document.getElementById("status").innerText = "LOCKED ON SLOT";
-            document.getElementById("status").style.color = "#00ff00";
-        }
-
         function start() {
             rotation = document.getElementById("i").value.split(',').map(s => s.trim()).filter(s => s !== "");
             updateUI();
-            if(rotation.length > 0 && targetPos) {
+            if(rotation.length > 0) {
                 isScanning = true;
                 checkLoop();
-            } else if (!targetPos) {
-                document.getElementById("status").innerText = "CALIBRATE FIRST!";
-                document.getElementById("status").style.color = "#ff4444";
             }
         }
 
@@ -179,30 +149,25 @@
                 rotation.push(rotation.shift());
                 updateUI();
                 isScanning = false;
-                // Wait for the 1.8s GCD to finish before looking again
                 setTimeout(() => { isScanning = true; }, 1200); 
             }
         }
 
         function checkLoop() {
-            if (!isScanning || !targetPos) {
-                setTimeout(checkLoop, 100);
-                return;
-            }
+            if (!isScanning || !window.alt1) { setTimeout(checkLoop, 200); return; }
+            
+            // Logic: Capture screen and search for the current 'Main' icon
+            let screen = alt1.bindlnInterface(0, 0, alt1.rsWidth, alt1.rsHeight);
+            let found = screen.findSubimage(document.getElementById("m"));
 
-            let img = alt1.bindlnInterface(targetPos.x, targetPos.y, 1, 1);
-            let p = img.getPixel(0, 0);
-            let currentBrightness = (p[0] + p[1] + p[2]) / 3;
-
-            // If the slot gets significantly darker (cooldown swipe), trigger NEXT
-            if (baseBrightness - currentBrightness > 35) {
-                document.getElementById("status").innerText = "ABILITY USED!";
+            // If the icon is GONE, it's on cooldown = ability used.
+            if (found.length === 0) {
+                document.getElementById("status").innerText = "DETECTED USE!";
                 next();
             } else {
-                document.getElementById("status").innerText = "WATCHING SLOT...";
+                document.getElementById("status").innerText = "LISTENING...";
             }
-
-            setTimeout(checkLoop, 100);
+            setTimeout(checkLoop, 200);
         }
     </script>
 </body>
