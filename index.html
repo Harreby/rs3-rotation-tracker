@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RotTracker - 1.8s GCD Optimized</title>
+    <title>RotTracker - Optimized</title>
     <script src="https://runeapps.org/alt1/alt1lib.js"></script>
     <style>
         body { 
@@ -63,7 +63,7 @@
         }
         textarea { height: 50px; resize: none; color: #b0ffb0; }
 
-        /* Ability-Specific Styling */
+        /* Style Colors */
         [label="Melee"], [label="Melee"] option { color: #ff6060; font-weight: bold; }
         [label="Ranged"], [label="Ranged"] option { color: #60ff60; font-weight: bold; }
         [label="Magic"], [label="Magic"] option { color: #60c0ff; font-weight: bold; }
@@ -109,6 +109,10 @@
                 <option value="Soul Feast">Soul Feast</option>
                 <option value="Volley of Souls">Volley of Souls</option>
                 <option value="Living Death">Living Death</option>
+                <option value="Conjure Undead Army">Conjure Undead Army</option>
+                <option value="Command Undead Army">Command Undead Army</option>
+                <option value="Bloat">Bloat</option>
+                <option value="Blood Siphon">Blood Siphon</option>
             </optgroup>
             <optgroup label="Ranged">
                 <option value="Greater Ricochet">G-Ricochet</option>
@@ -191,7 +195,6 @@
             if (rotation.length > 1) {
                 rotation.push(rotation.shift());
                 updateUI();
-                // Pause scanning briefly for 1.2s to prevent skipping during GCD animation
                 isScanning = false;
                 setTimeout(() => { isScanning = true; }, 1200);
             }
@@ -203,13 +206,9 @@
                 return;
             }
 
-            // Capture the RS window
             let screen = alt1.bindlnInterface(0, 0, alt1.rsWidth, alt1.rsHeight);
-            
-            // Search specifically for the Main ability icon on your screen
             let found = screen.findSubimage(document.getElementById("m"));
 
-            // If found.length is 0, the icon is missing (on cooldown/used)
             if (found.length === 0) {
                 document.getElementById("status").innerText = "STATUS: USED!";
                 next();
@@ -217,7 +216,6 @@
                 document.getElementById("status").innerText = "STATUS: READY...";
             }
 
-            // High frequency scan (10 times per second) for responsiveness
             setTimeout(checkScreenLoop, 100);
         }
     </script>
