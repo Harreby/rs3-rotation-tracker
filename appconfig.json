@@ -1,7 +1,0 @@
-{
-	"name": "RotTracker",
-	"version": "1.0.0",
-	"description": "RS3 Rotation Tracker",
-	"main": "index.html",
-	"permissions": ["screen"]
-}
