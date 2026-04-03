@@ -1,7 +1,6 @@
 {
-  "name": "RotTracker",
-  "version": "1.0.0",
-  "description": "My RS3 Tracker",
-  "main": "index.html",
-  "permissions": ["screen"]
+"name": "RotTracker",
+"version": "1.0.0",
+"description": "RS3 Tracker",
+"main": "index.html"
 }
